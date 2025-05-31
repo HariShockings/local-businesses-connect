@@ -1,8 +1,9 @@
 import { useState, useRef, useEffect } from 'react';
-import { Link } from 'react-router-dom';
+import { Link, useNavigate } from 'react-router-dom';
 import { Bell, Sun, Moon, User, Settings, LogOut, Search } from 'lucide-react';
 import { useTheme } from '../../contexts/ThemeContext';
 import { motion, AnimatePresence } from 'framer-motion';
+import axios from 'axios';
 
 interface NavbarProps {
   children?: React.ReactNode;
@@ -17,9 +18,29 @@ export default function Navbar({ children }: NavbarProps) {
   
   const notificationRef = useRef<HTMLDivElement>(null);
   const userMenuRef = useRef<HTMLDivElement>(null);
+  const navigate = useNavigate();
 
   const toggleTheme = () => {
     setTheme(isDark ? 'light' : 'dark');
+  };
+
+  const handleSignOut = async () => {
+    try {
+      // Call the backend logout endpoint
+      await axios.post('http://localhost:5000/api/users/logout');
+      // Remove the token from localStorage
+      localStorage.removeItem('token');
+      // Close the user menu
+      setShowUserMenu(false);
+      // Redirect to login page
+      navigate('/login');
+    } catch (error) {
+      console.error('Logout failed:', error);
+      // Still remove token and redirect even if backend call fails
+      localStorage.removeItem('token');
+      setShowUserMenu(false);
+      navigate('/login');
+    }
   };
 
   useEffect(() => {
@@ -176,7 +197,7 @@ export default function Navbar({ children }: NavbarProps) {
                         Settings
                       </Link>
                       <button
-                        onClick={() => setShowUserMenu(false)}
+                        onClick={handleSignOut}
                         className="flex w-full items-center px-4 py-2 text-sm text-gray-700 dark:text-gray-200 hover:bg-gray-100 dark:hover:bg-gray-700"
                       >
                         <LogOut className="mr-3 h-4 w-4" />

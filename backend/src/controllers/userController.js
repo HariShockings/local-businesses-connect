@@ -10,7 +10,7 @@ class UserController {
   }
 
   register = asyncHandler(async (req, res) => {
-    const { name, email, password } = req.body;
+    const { name, email, password, role } = req.body;
 
     const userExists = await User.findOne({ email });
     if (userExists) {
@@ -22,6 +22,7 @@ class UserController {
       name,
       email,
       password,
+      role: role || 'user',
     });
 
     if (user) {
@@ -40,6 +41,7 @@ class UserController {
         email: user.email,
         role: user.role,
         preferences: user.preferences,
+        token, // Add token to response
       });
     } else {
       res.status(400);
@@ -67,6 +69,7 @@ class UserController {
         email: user.email,
         role: user.role,
         preferences: user.preferences,
+        token, // Add token to response
       });
     } else {
       res.status(401);
