@@ -5,15 +5,16 @@ import { motion, AnimatePresence } from 'framer-motion';
 
 function Auth() {
   const [isLogin, setIsLogin] = useState(true);
-  const [email, setEmail] = useState('');
+  const [emailOrUsername, setEmailOrUsername] = useState('');
   const [password, setPassword] = useState('');
   const [name, setName] = useState('');
-  const [role, setRole] = useState(''); // Default to empty string to enforce selection
+  const [username, setUsername] = useState('');
+  const [role, setRole] = useState('');
   const [error, setError] = useState('');
-  const [emailError, setEmailError] = useState('');
+  const [emailOrUsernameError, setEmailOrUsernameError] = useState('');
   const [passwordError, setPasswordError] = useState('');
   const [passwordStrength, setPasswordStrength] = useState('');
-  const [roleError, setRoleError] = useState(''); // New state for role validation
+  const [roleError, setRoleError] = useState('');
   const [isMobile, setIsMobile] = useState(window.innerWidth < 768);
   const navigate = useNavigate();
 
@@ -25,15 +26,16 @@ function Auth() {
     return () => window.removeEventListener('resize', handleResize);
   }, []);
 
-  // Validate email
-  const validateEmail = (value: string) => {
+  // Validate email or username
+  const validateEmailOrUsername = (value: string) => {
     const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+    const usernameRegex = /^[a-zA-Z0-9_]+$/;
     if (!value) {
-      setEmailError('Email is required');
-    } else if (!emailRegex.test(value)) {
-      setEmailError('Please enter a valid email');
+      setEmailOrUsernameError('Email or username is required');
+    } else if (!emailRegex.test(value) && !usernameRegex.test(value)) {
+      setEmailOrUsernameError('Please enter a valid email or username (letters, numbers, underscores)');
     } else {
-      setEmailError('');
+      setEmailOrUsernameError('');
     }
   };
 
@@ -59,10 +61,10 @@ function Auth() {
     setPasswordStrength(strength);
   };
 
-  const handleEmailChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+  const handleEmailOrUsernameChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const value = e.target.value;
-    setEmail(value);
-    validateEmail(value);
+    setEmailOrUsername(value);
+    validateEmailOrUsername(value);
   };
 
   const handlePasswordChange = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -71,12 +73,25 @@ function Auth() {
     validatePassword(value);
   };
 
+  const getDeviceInfo = () => {
+    const userAgent = navigator.userAgent;
+    let device = 'Unknown Device';
+    if (/Mobi|Android|iPhone|iPad|iPod/.test(userAgent)) {
+      device = /Android/.test(userAgent) ? 'Android Device' : 'iOS Device';
+    } else if (/Macintosh|Mac OS X/.test(userAgent)) {
+      device = 'Mac';
+    } else if (/Windows/.test(userAgent)) {
+      device = 'Windows PC';
+    }
+    return device;
+  };
+
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setError('');
 
     // Validate before submission
-    validateEmail(email);
+    validateEmailOrUsername(emailOrUsername);
     validatePassword(password);
     if (!isLogin && !role) {
       setRoleError('Please select a role');
@@ -84,13 +99,17 @@ function Auth() {
       setRoleError('');
     }
 
-    if (emailError || passwordError || roleError || (!isLogin && !name)) {
+    if (emailOrUsernameError || passwordError || roleError || (!isLogin && !name)) {
       return;
     }
 
     try {
       if (isLogin) {
-        const response = await axios.post('http://localhost:5000/api/users/login', { email, password }, {
+        const response = await axios.post('http://localhost:5000/api/users/login', {
+          email: emailOrUsername,
+          password,
+          device: getDeviceInfo(),
+        }, {
           withCredentials: true,
         });
         const { token } = response.data;
@@ -101,7 +120,13 @@ function Auth() {
           throw new Error('Token not received');
         }
       } else {
-        await axios.post('http://localhost:5000/api/users/register', { name, email, password, role });
+        await axios.post('http://localhost:5000/api/users/register', {
+          name,
+          username: username || undefined,
+          email: emailOrUsername,
+          password,
+          role,
+        });
         setIsLogin(true);
       }
     } catch (err) {
@@ -111,11 +136,12 @@ function Auth() {
 
   const toggleForm = () => {
     setError('');
-    setEmail('');
+    setEmailOrUsername('');
     setPassword('');
     setName('');
+    setUsername('');
     setRole('');
-    setEmailError('');
+    setEmailOrUsernameError('');
     setPasswordError('');
     setPasswordStrength('');
     setRoleError('');
@@ -173,17 +199,28 @@ function Auth() {
                   />
                 </div>
               )}
+              {!isLogin && (
+                <div>
+                  <input
+                    type="text"
+                    value={username}
+                    onChange={(e) => setUsername(e.target.value)}
+                    placeholder="Username (optional) - eg: hari123"
+                    className="w-full p-3 bg-gray-50 dark:bg-gray-700 border border-gray-300 dark:border-gray-600 rounded-lg text-gray-900 dark:text-gray-100 focus:outline-none focus:ring-2 focus:ring-primary-500 transition duration-200"
+                  />
+                </div>
+              )}
               <div>
                 <input
-                  type="email"
-                  value={email}
-                  onChange={handleEmailChange}
-                  placeholder="Email - eg: hari@example.com"
+                  type="text"
+                  value={emailOrUsername}
+                  onChange={handleEmailOrUsernameChange}
+                  placeholder={isLogin ? "Email or Username - eg: hari@example.com or hari123" : "Email - eg: hari@example.com"}
                   className="w-full p-3 bg-gray-50 dark:bg-gray-700 border border-gray-300 dark:border-gray-600 rounded-lg text-gray-900 dark:text-gray-100 focus:outline-none focus:ring-2 focus:ring-primary-500 transition duration-200"
                   required
                 />
-                {emailError && (
-                  <p className="mt-1 text-xs text-red-500">{emailError}</p>
+                {emailOrUsernameError && (
+                  <p className="mt-1 text-xs text-red-500">{emailOrUsernameError}</p>
                 )}
               </div>
               <div>

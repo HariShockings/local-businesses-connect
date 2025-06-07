@@ -1,9 +1,15 @@
 import { useState, useEffect } from 'react';
 import { Routes, Route, Navigate } from 'react-router-dom';
 import { ThemeProvider } from './contexts/ThemeContext';
+import 'react-toastify/dist/ReactToastify.css';
 import Layout from './components/layout/Layout';
 import Dashboard from './pages/Dashboard';
 import Analytics from './pages/Analytics';
+import ManageBusinesses from './pages/ManageBusinesses';
+import ServiceOfferings from './pages/ServiceOfferings';
+import CustomerInteractions from './pages/CustomerInteractions';
+import CommunityResources from './pages/CommunityResources';
+import Reports from './pages/Reports';
 import Settings from './pages/Settings';
 import Profile from './pages/Profile';
 import NotFound from './pages/NotFound';
@@ -22,14 +28,13 @@ const ProtectedRoute = ({ children }: { children: React.ReactNode }) => {
         return;
       }
       try {
-        // Validate token by calling a protected endpoint (e.g., getProfile)
         await axios.get('http://localhost:5000/api/users/profile', {
           headers: { Authorization: `Bearer ${token}` },
           withCredentials: true,
         });
         setIsAuthenticated(true);
       } catch (err) {
-        localStorage.removeItem('token'); // Remove invalid token
+        localStorage.removeItem('token');
         setIsAuthenticated(false);
       }
     };
@@ -75,7 +80,7 @@ function App() {
     <ThemeProvider>
       <Routes>
         <Route path="/auth" element={<Auth />} />
-        <Route path="/" element={<Layout />}>
+        <Route path="/dashboard" element={<Layout />}>
           <Route
             index
             element={
@@ -89,6 +94,46 @@ function App() {
             element={
               <ProtectedRoute>
                 <Analytics />
+              </ProtectedRoute>
+            }
+          />
+          <Route
+            path="businesses"
+            element={
+              <ProtectedRoute>
+                <ManageBusinesses />
+              </ProtectedRoute>
+            }
+          />
+          <Route
+            path="services"
+            element={
+              <ProtectedRoute>
+                <ServiceOfferings />
+              </ProtectedRoute>
+            }
+          />
+          <Route
+            path="interactions"
+            element={
+              <ProtectedRoute>
+                <CustomerInteractions />
+              </ProtectedRoute>
+            }
+          />
+          <Route
+            path="resources"
+            element={
+              <ProtectedRoute>
+                <CommunityResources />
+              </ProtectedRoute>
+            }
+          />
+          <Route
+            path="reports"
+            element={
+              <ProtectedRoute>
+                <Reports />
               </ProtectedRoute>
             }
           />

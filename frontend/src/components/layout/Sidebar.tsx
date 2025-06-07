@@ -1,5 +1,5 @@
 import { Link, useLocation } from 'react-router-dom';
-import { LayoutDashboard, BarChart2, Settings, User, HelpCircle, BarChart } from 'lucide-react';
+import { LayoutDashboard, BarChart2, Settings, User, HelpCircle, BarChart, Briefcase, List, MessageCircle, Heart, FileText } from 'lucide-react';
 import { motion } from 'framer-motion';
 
 interface SidebarProps {
@@ -10,10 +10,15 @@ export default function Sidebar({ closeSidebar }: SidebarProps) {
   const location = useLocation();
   
   const navigation = [
-    { name: 'Dashboard', icon: LayoutDashboard, href: '/' },
-    { name: 'Analytics', icon: BarChart2, href: '/analytics' },
-    { name: 'Settings', icon: Settings, href: '/settings' },
-    { name: 'Profile', icon: User, href: '/profile' },
+    { name: 'Dashboard', icon: LayoutDashboard, href: '/dashboard/' },
+    { name: 'Analytics', icon: BarChart2, href: '/dashboard/analytics' },
+    { name: 'Manage Businesses', icon: Briefcase, href: '/dashboard/businesses' },
+    { name: 'Service Offerings', icon: List, href: '/dashboard/services' },
+    { name: 'Customer Interactions', icon: MessageCircle, href: '/dashboard/interactions' },
+    { name: 'Community Resources', icon: Heart, href: '/dashboard/resources' },
+    { name: 'Reports', icon: FileText, href: '/dashboard/reports' },
+    { name: 'Settings', icon: Settings, href: '/dashboard/settings' },
+    { name: 'Profile', icon: User, href: '/dashboard/profile' },
   ];
 
   const isActive = (href: string) => {
@@ -28,7 +33,7 @@ export default function Sidebar({ closeSidebar }: SidebarProps) {
       <div className="flex flex-shrink-0 items-center px-4 h-16 border-b border-gray-200 dark:border-gray-700">
         <Link to="/" className="flex items-center" onClick={closeSidebar}>
           <BarChart className="h-8 w-8 text-primary-600" />
-          <span className="ml-2 text-xl font-semibold text-gray-900 dark:text-white">Insight</span>
+          <span className="ml-2 text-xl font-semibold text-gray-900 dark:text-white">Community Connect</span>
         </Link>
       </div>
       

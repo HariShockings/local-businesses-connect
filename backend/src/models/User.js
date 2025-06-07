@@ -1,10 +1,40 @@
 import mongoose from 'mongoose';
 import bcrypt from 'bcryptjs';
 
+const sessionSchema = new mongoose.Schema({
+  device: {
+    type: String,
+    required: true,
+  },
+  location: {
+    type: String,
+    default: 'Unknown',
+  },
+  ip: {
+    type: String,
+    required: true,
+  },
+  lastActive: {
+    type: Date,
+    default: Date.now,
+  },
+  token: {
+    type: String,
+    required: true,
+  },
+});
+
 const userSchema = new mongoose.Schema({
   name: {
     type: String,
     required: true,
+  },
+  username: {
+    type: String,
+    unique: true,
+    lowercase: true,
+    trim: true,
+    match: [/^[a-zA-Z0-9_]+$/, 'Username can only contain letters, numbers, and underscores'],
   },
   email: {
     type: String,
@@ -17,10 +47,34 @@ const userSchema = new mongoose.Schema({
     required: true,
     minlength: 6,
   },
+  phone: {
+    type: String,
+    default: '',
+  },
   role: {
     type: String,
     enum: ['user', 'admin', 'business_owner'],
     default: 'user',
+  },
+  profilePicture: {
+    type: String,
+    default: null,
+  },
+  coverImage: {
+    type: String,
+    default: null,
+  },
+  location: {
+    type: String,
+    default: '',
+  },
+  website: {
+    type: String,
+    default: '',
+  },
+  bio: {
+    type: String,
+    default: '',
   },
   preferences: {
     theme: {
@@ -34,6 +88,7 @@ const userSchema = new mongoose.Schema({
       sms: { type: Boolean, default: false },
     },
   },
+  sessions: [sessionSchema],
 }, {
   timestamps: true,
 });

@@ -33,13 +33,13 @@ export default function Navbar({ children }: NavbarProps) {
       // Close the user menu
       setShowUserMenu(false);
       // Redirect to login page
-      navigate('/login');
+      navigate('/auth');
     } catch (error) {
       console.error('Logout failed:', error);
       // Still remove token and redirect even if backend call fails
       localStorage.removeItem('token');
       setShowUserMenu(false);
-      navigate('/login');
+      navigate('/auth');
     }
   };
 
