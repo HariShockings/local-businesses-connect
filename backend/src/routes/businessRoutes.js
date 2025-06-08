@@ -1,10 +1,17 @@
 import express from 'express';
-import businessController from '../controllers/businessController.js';
+import businessController from '../controllers/businessController.js'; // Fixed case
 import authMiddleware from '../middleware/authMiddleware.js';
 import upload from '../config/multerConfig.js';
 
 const router = express.Router();
 
+// Public routes
+router.route('/get-all')
+  .get(businessController.getAllBusinesses);
+router.route('/:pageName')
+  .get(businessController.getBusinessByPageName);
+
+// Protected routes
 router.use(authMiddleware.protect);
 
 router.route('/')
@@ -28,5 +35,9 @@ router.route('/:id/products')
 router.route('/:id/products/:productId')
   .put(businessController.updateProduct)
   .delete(businessController.deleteProduct);
+
+// router.route('/:id/reviews')
+//   .get(authMiddleware.allowPublic, businessController.getReviews)
+//   .post(businessController.createReview);
 
 export default router;

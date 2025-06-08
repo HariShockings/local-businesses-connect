@@ -41,6 +41,19 @@ const productSchema = new mongoose.Schema({
       min: 0,
     },
   },
+  category: {
+    type: String,
+    default: '',
+  },
+  inStock: {
+    type: Boolean,
+    default: true,
+  },
+  specifications: {
+    type: Map,
+    of: String,
+    default: {},
+  },
 });
 
 const businessSchema = new mongoose.Schema(
@@ -96,6 +109,47 @@ const businessSchema = new mongoose.Schema(
       type: Map,
       of: [productSchema],
       default: {},
+    },
+    rating: {
+      type: Number,
+      default: 0,
+      min: 0,
+      max: 5,
+    },
+    reviewCount: {
+      type: Number,
+      default: 0,
+      min: 0,
+    },
+    hours: {
+      type: Map,
+      of: String,
+      default: {},
+    },
+    images: {
+      type: [String],
+      default: [],
+    },
+    isOpen: {
+      type: Boolean,
+      default: true,
+    },
+    category: {
+      type: String,
+      enum: [
+        'Coffee & Beverages',
+        'Technology Repair',
+        'Automotive Services',
+        'Home Services',
+        'Food & Dining',
+        'Health & Fitness',
+        'Beauty & Spa',
+        'Education & Training',
+        'Professional Services',
+        'Retail & Shopping',
+        '',
+      ],
+      default: '',
     },
   },
   {

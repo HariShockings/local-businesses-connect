@@ -26,7 +26,6 @@ function Auth() {
     return () => window.removeEventListener('resize', handleResize);
   }, []);
 
-  // Validate email or username
   const validateEmailOrUsername = (value: string) => {
     const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
     const usernameRegex = /^[a-zA-Z0-9_]+$/;
@@ -39,7 +38,6 @@ function Auth() {
     }
   };
 
-  // Validate password and calculate strength
   const validatePassword = (value: string) => {
     if (!value) {
       setPasswordError('Password is required');
@@ -90,7 +88,6 @@ function Auth() {
     e.preventDefault();
     setError('');
 
-    // Validate before submission
     validateEmailOrUsername(emailOrUsername);
     validatePassword(password);
     if (!isLogin && !role) {
@@ -112,10 +109,14 @@ function Auth() {
         }, {
           withCredentials: true,
         });
-        const { token } = response.data;
+        const { token, role } = response.data;
         if (token) {
           localStorage.setItem('token', token);
-          navigate('/');
+          if (role === 'user') {
+            navigate('/');
+          } else {
+            navigate('/dashboard/');
+          }
         } else {
           throw new Error('Token not received');
         }
@@ -194,7 +195,7 @@ function Auth() {
                     value={name}
                     onChange={(e) => setName(e.target.value)}
                     placeholder="Name - eg: Hariharan"
-                    className="w-full p-3 bg-gray-50 dark:bg-gray-700 border border-gray-300 dark:border-gray-600 rounded-lg text-gray-900 dark:text-gray-100 focus:outline-none focus:ring-2 focus:ring-primary-500 transition duration-200"
+                    className="w-full p-3 bg-gray-50 dark:bg-gray-700 border border-gray-300 dark:border-gray-600 rounded-lg text-gray-900 dark:text-gray-100 focus:outline-none focus:ring-2 focus:ring-blue-500 transition duration-200"
                     required
                   />
                 </div>
@@ -206,7 +207,7 @@ function Auth() {
                     value={username}
                     onChange={(e) => setUsername(e.target.value)}
                     placeholder="Username (optional) - eg: hari123"
-                    className="w-full p-3 bg-gray-50 dark:bg-gray-700 border border-gray-300 dark:border-gray-600 rounded-lg text-gray-900 dark:text-gray-100 focus:outline-none focus:ring-2 focus:ring-primary-500 transition duration-200"
+                    className="w-full p-3 bg-gray-50 dark:bg-gray-700 border border-gray-300 dark:border-gray-600 rounded-lg text-gray-900 dark:text-gray-100 focus:outline-none focus:ring-2 focus:ring-blue-500 transition duration-200"
                   />
                 </div>
               )}
@@ -216,7 +217,7 @@ function Auth() {
                   value={emailOrUsername}
                   onChange={handleEmailOrUsernameChange}
                   placeholder={isLogin ? "Email or Username - eg: hari@example.com or hari123" : "Email - eg: hari@example.com"}
-                  className="w-full p-3 bg-gray-50 dark:bg-gray-700 border border-gray-300 dark:border-gray-600 rounded-lg text-gray-900 dark:text-gray-100 focus:outline-none focus:ring-2 focus:ring-primary-500 transition duration-200"
+                  className="w-full p-3 bg-gray-50 dark:bg-gray-700 border border-gray-300 dark:border-gray-600 rounded-lg text-gray-900 dark:text-gray-100 focus:outline-none focus:ring-2 focus:ring-blue-500 transition duration-200"
                   required
                 />
                 {emailOrUsernameError && (
@@ -229,7 +230,7 @@ function Auth() {
                   value={password}
                   onChange={handlePasswordChange}
                   placeholder="Password - eg: Password123"
-                  className="w-full p-3 bg-gray-50 dark:bg-gray-700 border border-gray-300 dark:border-gray-600 rounded-lg text-gray-900 dark:text-gray-100 focus:outline-none focus:ring-2 focus:ring-primary-500 transition duration-200"
+                  className="w-full p-3 bg-gray-50 dark:bg-gray-700 border border-gray-300 dark:border-gray-600 rounded-lg text-gray-900 dark:text-gray-100 focus:outline-none focus:ring-2 focus:ring-blue-500 transition duration-200"
                   required
                   minLength={isLogin ? undefined : 6}
                 />
@@ -254,7 +255,7 @@ function Auth() {
                       setRole(e.target.value);
                       setRoleError('');
                     }}
-                    className="w-full p-3 bg-gray-50 dark:bg-gray-700 border border-gray-300 dark:border-gray-600 rounded-lg text-gray-900 dark:text-gray-100 focus:outline-none focus:ring-2 focus:ring-primary-500 transition-all duration-300 hover:bg-gray-100 dark:hover:bg-gray-600 appearance-none cursor-pointer"
+                    className="w-full p-3 bg-gray-50 dark:bg-gray-700 border border-gray-300 dark:border-gray-600 rounded-lg text-gray-900 dark:text-gray-100 focus:outline-none focus:ring-2 focus:ring-blue-500 transition-all duration-300 hover:bg-gray-100 dark:hover:bg-gray-600 appearance-none cursor-pointer"
                   >
                     <option value="" disabled>Select Role</option>
                     <option value="user">User</option>
@@ -267,16 +268,23 @@ function Auth() {
               )}
               <button
                 type="submit"
-                className="w-full bg-primary-600 text-white p-3 rounded-lg font-medium hover:bg-primary-700 focus:outline-none focus:ring-2 focus:ring-primary-500 focus:ring-offset-2 dark:focus:ring-offset-gray-800 transition duration-200"
+                className="w-full bg-blue-600 dark:bg-blue-500 text-white p-3 rounded-lg font-medium hover:bg-blue-700 dark:hover:bg-blue-400 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 dark:focus:ring-offset-gray-800 transition duration-200"
               >
                 {isLogin ? 'Login' : 'Register'}
+              </button>
+              <button
+                type="button"
+                onClick={() => navigate('/')}
+                className="w-full bg-gray-600 dark:bg-gray-700 text-white p-3 rounded-lg font-medium hover:bg-gray-700 dark:hover:bg-gray-600 focus:outline-none focus:ring-2 focus:ring-gray-500 focus:ring-offset-2 dark:focus:ring-offset-gray-800 transition duration-200 mt-4"
+              >
+                Go to Store
               </button>
             </form>
             <p className="mt-4 sm:mt-6 text-center text-sm text-gray-600 dark:text-gray-400">
               {isLogin ? "Don't have an account?" : "Already have an account?"}{' '}
               <button
                 onClick={toggleForm}
-                className="text-primary-600 hover:text-primary-700 font-medium focus:outline-none transition duration-200"
+                className="text-blue-600 dark:text-blue-400 hover:text-blue-700 dark:hover:text-blue-300 font-medium focus:outline-none transition duration-200"
               >
                 {isLogin ? 'Register' : 'Login'}
               </button>

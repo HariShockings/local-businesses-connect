@@ -16,6 +16,7 @@ interface Business {
   website: string;
   services: string[];
   customIcon: string | null;
+  category: string;
 }
 
 const api = axios.create({
@@ -37,6 +38,7 @@ export default function ManageBusinesses() {
     website: '',
     services: [] as string[],
     customIcon: null as string | null,
+    category: '',
   });
   const [isEditing, setIsEditing] = useState(false);
   const [serviceInput, setServiceInput] = useState('');
@@ -46,6 +48,20 @@ export default function ManageBusinesses() {
   const [loading, setLoading] = useState(false);
   const [processingToastId, setProcessingToastId] = useState<string | number | null>(null);
   const [pageNameError, setPageNameError] = useState('');
+
+  const categories = [
+    'Coffee & Beverages',
+    'Technology Repair',
+    'Automotive Services',
+    'Home Services',
+    'Food & Dining',
+    'Health & Fitness',
+    'Beauty & Spa',
+    'Education & Training',
+    'Professional Services',
+    'Retail & Shopping',
+    '',
+  ];
 
   const iconList = Object.keys(Icons)
     .filter((key) => key.startsWith('Fa'))
@@ -77,6 +93,7 @@ export default function ManageBusinesses() {
           website: business.website || '',
           services: business.services || [],
           customIcon: business.customIcon || null,
+          category: business.category || '',
         });
         setIsEditing(true);
         setPageNameError('');
@@ -119,14 +136,12 @@ export default function ManageBusinesses() {
   };
 
   const validatePageName = (pageName: string, excludeId?: string): string => {
-    // Check for spaces and special characters (except hyphen)
     if (/\s/.test(pageName)) {
       return 'Page name cannot contain spaces';
     }
     if (!/^[a-zA-Z][a-zA-Z0-9-]*$/.test(pageName)) {
       return 'Page name must start with a letter and contain only letters, numbers, or hyphens';
     }
-    // Check for uniqueness (excluding the current business if editing)
     const existingPage = businesses.find(
       (b) => b.pageName.toLowerCase() === pageName.toLowerCase() && b._id !== excludeId
     );
@@ -268,7 +283,7 @@ export default function ManageBusinesses() {
     if ('key' in e) {
       if (e.key === 'Enter' || e.key === ' ' || e.key === ',') {
         e.preventDefault();
-        if (formData.services.length>= 5) {
+        if (formData.services.length >= 5) {
           toast.warn('Maximum 5 services allowed', {
             position: 'top-right',
             autoClose: 5000,
@@ -339,7 +354,6 @@ export default function ManageBusinesses() {
       return;
     }
 
-    // Ensure unique pageName
     const uniquePageName = generateUniquePageName(formData.pageName, isEditing ? selectedBusinessId : undefined);
     const updatedFormData = { ...formData, pageName: uniquePageName };
 
@@ -484,8 +498,7 @@ export default function ManageBusinesses() {
   };
 
   const handleVisitPage = (pageName: string) => {
-    // Assuming the business page is accessible at /business/{pageName}
-    window.location.href = `/../${pageName}`;
+    window.location.href = `/${pageName}`;
   };
 
   const resetForm = () => {
@@ -501,6 +514,7 @@ export default function ManageBusinesses() {
       website: '',
       services: [],
       customIcon: null,
+      category: '',
     });
     setIsEditing(false);
     setShowIconPicker(false);
@@ -530,10 +544,10 @@ export default function ManageBusinesses() {
         <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
           Select Business Profile
         </label>
-        <select
+        <select name=""
           value={selectedBusinessId}
           onChange={(e) => setSelectedBusinessId(e.target.value)}
-          className="w-full md:w-1/3 px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-800 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
+          className="block w-full md:w-1/3 px-3 py-2 border border-gray-300 dark:border-gray-600 px rounded-lg bg-white dark:bg-gray-800 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-600"
         >
           <option value="">Create New Business</option>
           {businesses.map((business) => (
@@ -552,46 +566,48 @@ export default function ManageBusinesses() {
           <div>
             <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Business Name</label>
             <div className="flex items-center">
-              <Icons.FaBriefcase size={16} className="text-gray-400 mr-2" />
+              <Icons.FaBriefcase size={16} className="text-gray-600 dark:text-blue-400 mr-2" />
               <input
                 type="text"
                 name="name"
                 value={formData.name || ''}
                 onChange={handleInputChange}
-                className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-800 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
+                className="block w-full px-3 py-2 border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-800 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
                 placeholder="Enter business name"
                 required
-              />
+                />
+              </div>
             </div>
-          </div>
 
-          <div>
+          <div className="">
             <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Icon</label>
             <div className="relative">
               {formData.icon || formData.customIcon ? (
-                <div className="flex items-center">
-                  {formData.customIcon ? (
-                    <img src={formData.customIcon} alt="Custom Icon" className="w-6 h-6 mr-2 object-contain" />
-                  ) : (
-                    <span className="mr-2">
-                      {React.createElement(Icons[formData.icon as keyof typeof Icons], { size: 16, className: 'text-gray-400' })}
-                    </span>
-                  )}
-                  <button
-                    type="button"
-                    onClick={handleDeselectIcon}
-                    className="absolute top-0 right-0 text-red-600 dark:text-red-400 text-xs"
-                  >
-                    ×
-                  </button>
-                </div>
+                <>
+                  <div className="flex items-center">
+                    {formData.customIcon ? (
+                      <img src={formData.customIcon} alt="Custom Icon" className="w-6 h-6 mr-2 object-contain" />
+                    ) : (
+                      <span className="mr-2">
+                        {React.createElement(Icons[formData.icon as keyof typeof Icons], { size: 20, className: 'text-gray-600 dark:text-gray-400' })}
+                      </span>
+                    )}
+                    <button
+                      type="button"
+                      onClick={() => handleDeselectIcon()}
+                      className="absolute top-0 right-0 text-red-600 dark:text-red-400 text-xs"
+                    >
+                      ×
+                    </button>
+                  </div>
+                </>
               ) : isFileUpload ? (
                 <div
                   className="flex items-center"
                   onDragOver={(e) => e.preventDefault()}
-                  onDrop={handleDrop}
+                  onDrop={(e) => handleDrop(e)}
                 >
-                  <Icons.FaImage size={16} className="text-gray-400 mr-2" />
+                  <Icons.FaImage size={16} className="text-blue-400 dark:text-gray-400 mr-2" />
                   <input
                     type="file"
                     accept="image/png"
@@ -601,33 +617,33 @@ export default function ManageBusinesses() {
                   <button
                     type="button"
                     onClick={() => setIsFileUpload(false)}
-                    className="ml-2 px-3 py-2 bg-sky-600/25 text-white rounded-lg hover:bg-sky-700/30 text-xs"
+                    className="ml-2 px-4 py-2 bg-blue-600/25 text-white rounded-lg hover:bg-blue-700/30 text-xs"
                   >
                     Use Icon Picker
                   </button>
                 </div>
               ) : (
                 <div className="flex items-center">
-                  <Icons.FaIcons size={16} className="text-gray-400 mr-2" />
+                  <Icons.FaIcons size={16} className="text-blue-600 dark:text-blue-400 mr-2" />
                   <input
                     type="text"
                     value={iconSearch || ''}
                     onChange={(e) => setIconSearch(e.target.value)}
                     onFocus={() => setShowIconPicker(true)}
-                    className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-800 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
+                    className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-800 text-sm focus:outline-none focus:ring-2 focus:ring-blue-600"
                     placeholder="Search for an icon..."
                   />
                   <button
                     type="button"
                     onClick={() => setIsFileUpload(true)}
-                    className="ml-2 px-3 py-2 bg-sky-600/25 text-white rounded-lg hover:bg-sky-700/30 text-xs"
+                    className="ml-2 px-4 py-2 bg-blue-600/25 hover:bg-blue-800 dark:hover:bg-gray-700 text-white rounded-lg text-xs"
                   >
                     Upload PNG
                   </button>
                 </div>
               )}
               {showIconPicker && !formData.icon && !formData.customIcon && !isFileUpload && (
-                <div className="absolute z-10 mt-2 w-full max-h-64 overflow-y-auto bg-white dark:bg-gray-800 border border-gray-300 dark:border-gray-600 rounded-lg shadow-lg">
+                <div className="absolute z-10 mt-2 w-full max-h-64 overflow-y-auto bg-white dark:bg-gray-900 border border-gray-300 dark:border-gray-600 rounded-lg shadow-lg">
                   <div className="grid grid-cols-4 gap-2 p-4">
                     {filteredIcons.length > 0 ? (
                       filteredIcons.map((icon) => (
@@ -635,10 +651,10 @@ export default function ManageBusinesses() {
                           key={icon.name}
                           type="button"
                           onClick={() => handleIconSelect(icon.name)}
-                          className="flex flex-col items-center p-2 hover:bg-gray-100 dark:hover:bg-gray-700 rounded"
+                          className="flex flex-col items-center p-2 hover:bg-gray-100 dark:hover:bg-blue-900 rounded"
                         >
                           <icon.component size={24} className="text-gray-600 dark:text-gray-300" />
-                          <span className="text-xs mt-1 text-gray-600 dark:text-gray-300">{icon.name}</span>
+                          <span className="text-xs mt-1 text-gray-600 dark:text-gray-400">{icon.name}</span>
                         </button>
                       ))
                     ) : (
@@ -651,9 +667,9 @@ export default function ManageBusinesses() {
           </div>
 
           <div>
-            <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Phone</label>
+            <label className="block text-sm font-semibold text-gray-900 dark:text-gray-300 mb-1">Phone</label>
             <div className="flex items-center">
-              <Icons.FaPhone size={16} className="text-gray-400 mr-2" />
+              <Icons.FaPhone size={16} className="text-gray-600 dark:text-blue-400 mr-2" />
               <input
                 type="tel"
                 name="contact.phone"
@@ -669,23 +685,23 @@ export default function ManageBusinesses() {
           <div>
             <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Email</label>
             <div className="flex items-center">
-              <Icons.FaEnvelope size={16} className="text-gray-400 mr-2" />
+              <Icons.FaEnvelope size={16} className="text-blue-600 dark:text-blue-400 mr-2" />
               <input
                 type="email"
                 name="contact.email"
+                placeholder="Enter email address"
                 value={formData.contact.email || ''}
                 onChange={handleInputChange}
                 className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-800 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
-                placeholder="Enter email address"
                 required
               />
             </div>
           </div>
 
           <div>
-            <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Location</label>
+            <label className="block text-sm font-semibold text-gray-900 dark:text-white mb-1">Location</label>
             <div className="flex items-center">
-              <Icons.FaMapMarkerAlt size={16} className="text-gray-400 mr-2" />
+              <Icons.FaMapMarkerAlt size={16} className="text-gray-600 dark:text-blue-400 mr-2" />
               <input
                 type="text"
                 name="location"
@@ -701,7 +717,7 @@ export default function ManageBusinesses() {
           <div>
             <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Page Name</label>
             <div className="flex items-center">
-              <Icons.FaGlobe size={16} className="text-gray-400 mr-2" />
+              <Icons.FaGlobe size={16} className="text-gray-600 dark:text-blue-400 mr-2" />
               <input
                 type="text"
                 name="pageName"
@@ -718,14 +734,14 @@ export default function ManageBusinesses() {
           </div>
 
           <div>
-            <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Theme</label>
+            <label className="block text-sm font-semibold text-gray-900 dark:text-gray-300 mb-1">Theme</label>
             <div className="flex items-center">
-              <Icons.FaPalette size={16} className="text-gray-400 mr-2" />
+              <Icons.FaPalette size={16} className="text-blue-600 dark:text-blue-400 mr-2" />
               <select
                 name="theme"
                 value={formData.theme || ''}
                 onChange={handleInputChange}
-                className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-800 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
+                className="w-full px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-800 text-sm focus:outline-none focus:ring-2 focus:ring-blue-600"
                 required
               >
                 <option value="">Select a theme</option>
@@ -738,70 +754,89 @@ export default function ManageBusinesses() {
           </div>
 
           <div>
-            <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Website</label>
+            <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Category</label>
             <div className="flex items-center">
-              <Icons.FaGlobe size={16} className="text-gray-400 mr-2" />
+              <Icons.FaTags size={16} className="text-blue-600 dark:text-blue-400 mr-2" />
+              <select
+                name="category"
+                value={formData.category || ''}
+                onChange={handleInputChange}
+                className="w-full px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-800 text-sm focus:outline-none focus:ring-2 focus:ring-blue-600"
+              >
+                <option value="">Select a category</option>
+                {categories.map((category) => (
+                  <option key={category || 'none'} value={category}>
+                    {category || 'None'}
+                  </option>
+                ))}
+              </select>
+            </div>
+          </div>
+
+          <div className="">
+            <label className="block text-sm font-semibold text-gray-900 dark:text-gray-300 mb-1">Website</label>
+            <div className="flex items-center">
+              <Icons.FaGlobe size={16} className="text-blue-600 dark:text-blue-400 mr-2" />
               <input
                 type="url"
                 name="website"
                 value={formData.website || ''}
                 onChange={handleInputChange}
                 className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-800 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
-                placeholder="Enter website URL"
+                placeholder="Enter your website URL"
               />
             </div>
           </div>
         </div>
 
         <div className="mt-6">
-          <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Description</label>
-          <textarea
+          <label className="block text-sm font-semibold text-gray-900 dark:text-gray-300 mb-1">Description</label>
+          <textarea rows={4}
             name="description"
             value={formData.description || ''}
-            onChange={handleInputChange}
-            className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-800 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
-            placeholder="Enter business description"
-            rows={4}
+            onChange={(e) => handleInputChange(e)}
+            className="w-full border text-gray-300 dark:border-gray-600 px-4 py-2 rounded-lg bg-white dark:bg-gray-800 text-base sm:text-sm focus:outline-none focus:ring-2 focus:ring-blue-600"
+            placeholder="Enter business description..."
           />
-        </div>
+          </div>
 
         <div className="mt-6">
-          <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Services (max 5)</label>
+          <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Services (max. 5)</label>
           <div className="flex items-center">
             <input
-              type="text"
-              value={serviceInput || ''}
-              onChange={handleServiceInput}
-              onKeyDown={handleServiceInput}
-              onPaste={handleServicePaste}
-              className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-800 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
-              placeholder="Enter services (separate by space, comma, or enter)"
-              disabled={formData.services.length >= 5}
-            />
-          </div>
+                type="text"
+                value={serviceInput || ''}
+                onChange={(e) => handleServiceInput(e)}
+                onKeyDown={(e) => handleServiceInput(e)}
+                onPaste={(e) => handleServicePaste(e)}
+                disabled={formData.services.length >= 5}
+                className="w-full px-3 py-2 px-4 border border-gray-300 dark:border-gray-600 rounded-lg bg-gray-200 dark:bg-gray-700 text-sm focus:outline-none focus:ring-2 focus:ring-blue-600 disabled:bg-gray-100 dark:disabled:bg-gray-800"
+                placeholder="Enter services..."
+              />
+            </div>
           <div className="mt-2 flex flex-wrap gap-2">
             {formData.services.map((service, index) => (
               <div
                 key={index}
-                className="flex items-center px-3 py-1 bg-gray-100 dark:bg-gray-700 rounded-full text-sm"
+                className="flex items-center px-2 py-1 bg-blue-200 dark:bg-gray-700 rounded-full text-sm"
               >
-                {service}
+                <span>{service}</span>
                 <button
                   type="button"
                   onClick={() => handleRemoveService(index)}
-                  className="ml-2 text-red-600 dark:text-red-400 hover:text-red-800 dark:hover:text-red-500"
+                  className="ml-2 text-red-600 dark:text-red-400 hover:text-red-800 dark:hover:text-red-500 focus:outline-none"
                 >
                   ×
-                </button>
-              </div>
-            ))}
+                  </button>
+                </div>
+              ))}
+            </div>
           </div>
-        </div>
 
         <div className="mt-6 flex gap-4">
           <button
             type="submit"
-            className="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700"
+            className="px-4 py-3 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors disabled:bg-gray-400 dark:disabled:bg-gray-600"
             disabled={loading || !!pageNameError}
           >
             {isEditing ? 'Update Business' : 'Add Business'}
@@ -809,8 +844,8 @@ export default function ManageBusinesses() {
           {isEditing && (
             <button
               type="button"
-              onClick={handleDelete}
-              className="px-4 py-2 bg-red-600 text-white rounded-lg hover:bg-red-700"
+              onClick={() => handleDelete()}
+              className="px-4 py-3 bg-red-600 text-white rounded-lg hover:bg-red-700 transition-colors disabled:bg-gray-400 dark:disabled:bg-gray-600"
               disabled={loading}
             >
               Delete Business
@@ -818,8 +853,8 @@ export default function ManageBusinesses() {
           )}
           <button
             type="button"
-            onClick={resetForm}
-            className="px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-800 hover:bg-gray-50 dark:hover:bg-gray-700"
+            onClick={() => resetForm()}
+            className="px-4 py-3 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-800 hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors disabled:bg-gray-400 dark:disabled:bg-gray-600"
             disabled={loading}
           >
             Cancel
@@ -827,59 +862,61 @@ export default function ManageBusinesses() {
         </div>
       </form>
 
-      <div className="mt-6 p-6 bg-white dark:bg-gray-800 rounded-lg shadow">
-        <h2 className="text-lg font-medium text-gray-900 dark:text-white mb-4">Business Profiles</h2>
-        <div className="overflow-x-auto">
-          <table className="min-w-full divide-y divide-gray-200 dark:divide-gray-700">
-            <thead>
-              <tr>
-                <th className="px-3 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">Icon</th>
-                <th className="px-3 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">Name</th>
-                <th className="px-3 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">Page Name</th>
-                <th className="px-3 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">Location</th>
-                <th className="px-3 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">Contact</th>
-                <th className="px-3 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">Theme</th>
-                <th className="px-3 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">Action</th>
-              </tr>
-            </thead>
-            <tbody className="divide-y divide-gray-200 dark:divide-gray-700">
-              {businesses.map((business) => (
-                <tr
-                  key={business._id}
-                  className="transition-all duration-200 hover:bg-blue-200 dark:hover:bg-blue-900/50 cursor-pointer hover:shadow-md"
-                  onClick={() => setSelectedBusinessId(business._id)}
-                >
-                  <td className="px-3 py-3 whitespace-nowrap text-sm text-gray-500 dark:text-gray-400">
-                    {business.customIcon ? (
-                      <img src={business.customIcon} alt="Custom Icon" className="w-5 h-5 object-contain" />
-                    ) : business.icon && Icons[business.icon as keyof typeof Icons] ? (
-                      React.createElement(Icons[business.icon as keyof typeof Icons], { size: 20 })
-                    ) : (
-                      '-'
-                    )}
-                  </td>
-                  <td className="px-3 py-3 whitespace-nowrap text-sm font-medium text-gray-900 dark:text-white">{business.name}</td>
-                  <td className="px-3 py-3 whitespace-nowrap text-sm text-gray-500 dark:text-gray-400">{business.pageName}</td>
-                  <td className="px-3 py-3 whitespace-nowrap text-sm text-gray-500 dark:text-gray-400">{business.location}</td>
-                  <td className="px-3 py-3 whitespace-nowrap text-sm text-gray-500 dark:text-gray-400">{business.contact.email}</td>
-                  <td className="px-3 py-3 whitespace-nowrap text-sm text-gray-500 dark:text-gray-400">{business.theme}</td>
-                  <td className="px-3 py-3 whitespace-nowrap text-sm text-gray-500 dark:text-gray-400">
-                    <button
-                      onClick={(e) => {
-                        e.stopPropagation(); // Prevent row click from triggering
-                        handleVisitPage(business.pageName);
-                      }}
-                      className="px-3 py-1 bg-green-600 text-white rounded-lg hover:bg-green-700 text-xs"
-                    >
-                      Visit Page
-                    </button>
-                  </td>
+        <div className="mt-6 p-6 bg-white dark:bg-gray-800 rounded-lg shadow">
+          <h2 className="text-lg font-semibold text-gray-900 dark:text-white mb-4">Business Profiles</h2>
+          <div className="overflow-x-auto">
+            <table className="min-w-full divide-y divide-gray-200 dark:divide-gray-700">
+              <thead className="bg-gray-50 dark:bg-gray-900">
+                <tr>
+                  <th className="px-3 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">Icon</th>
+                  <th className="px-3 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">Name</th>
+                  <th className="px-3 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">Page Name</th>
+                  <th className="px-3 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">Location</th>
+                  <th className="px-3 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">Category</th>
+                  <th className="px-3 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">Contact</th>
+                  <th className="px-3 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">Theme</th>
+                  <th className="px-3 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">Action</th>
                 </tr>
-              ))}
-            </tbody>
-          </table>
+              </thead>
+              <tbody className="divide-y divide-gray-200 dark:divide-gray-700">
+                {businesses.map((business) => (
+                  <tr
+                    key={business._id}
+                    className="transition-all duration-200 hover:bg-blue-200 dark:hover:bg-blue-900/50 cursor-pointer hover:shadow-md"
+                    onClick={() => setSelectedBusinessId(business._id)}
+                  >
+                    <td className="px-3 py-3 whitespace-nowrap text-sm text-gray-500 dark:text-gray-400">
+                      {business.customIcon ? (
+                        <img src={business.customIcon} alt="Custom Icon" className="w-5 h-5 object-contain" />
+                      ) : business.icon && Icons[business.icon as keyof typeof Icons] ? (
+                        React.createElement(Icons[business.icon as keyof typeof Icons], { size: 20 })
+                      ) : (
+                        '-'
+                      )}
+                    </td>
+                    <td className="px-3 py-3 whitespace-nowrap text-sm font-medium text-gray-900 dark:text-white">{business.name}</td>
+                    <td className="px-3 py-3 whitespace-nowrap text-sm text-gray-500 dark:text-gray-400">{business.pageName}</td>
+                    <td className="px-3 py-3 whitespace-nowrap text-sm text-gray-500 dark:text-gray-400">{business.location}</td>
+                    <td className="px-3 py-3 whitespace-nowrap text-sm text-gray-500 dark:text-gray-400">{business.category || '-'}</td>
+                    <td className="px-3 py-3 whitespace-nowrap text-sm text-gray-500 dark:text-gray-400">{business.contact.email}</td>
+                    <td className="px-3 py-3 whitespace-nowrap text-sm text-gray-500 dark:text-gray-400">{business.theme}</td>
+                    <td className="px-3 py-3 whitespace-nowrap text-sm text-gray-500 dark:text-gray-400">
+                      <button
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          handleVisitPage(business.pageName);
+                        }}
+                        className="px-3 py-1 bg-green-600 text-white rounded-lg hover:bg-green-700 text-xs"
+                      >
+                        Visit Page
+                      </button>
+                    </td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
         </div>
       </div>
-    </div>
-  );
-}
+    );
+  }

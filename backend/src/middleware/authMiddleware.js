@@ -31,4 +31,9 @@ class AuthMiddleware {
   });
 }
 
+const allowPublic = (req, res, next) => {
+  // Allow public access without requiring authentication
+  next();
+};
+
 export default new AuthMiddleware();
